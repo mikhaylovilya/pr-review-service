@@ -29,7 +29,7 @@ func (r *Repository) AddTeamHandler(c *gin.Context) {
 		c.AbortWithError(http.StatusBadRequest, errResp)
 		return
 	}
-	if err := teamDto.ValidateTeamDto(); err != nil {
+	if err := teamDto.Validate(); err != nil {
 		errResp := errors.New("failed to validate Team: " + err.Error())
 		c.AbortWithError(http.StatusBadRequest, errResp)
 		return
@@ -61,8 +61,27 @@ func (r *Repository) GetTeamHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, &team)
 }
 
-// func (r *Repository) SetUserStatusHandler(c *gin.Context) {
-// }
+func (r *Repository) SetUserStatusHandler(c *gin.Context) {
+	var setUserStatusDto SetUserStatusDto
+	if err := c.ShouldBindBodyWithJSON(&setUserStatusDto); err != nil {
+		errResp := errors.New("failed to unmarshall JSON body: " + err.Error())
+		c.AbortWithError(http.StatusBadRequest, errResp)
+		return
+	}
+	if err := setUserStatusDto.Validate(); err != nil {
+		errResp := errors.New("failed to validate SetUserStatusDto: " + err.Error())
+		c.AbortWithError(http.StatusBadRequest, errResp)
+		return
+	}
+
+	user, err := (*r.InMemory).SetUserStatus(setUserStatusDto.UserId, setUserStatusDto.IsActive)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, user)
+}
 
 func (r *Repository) CreatePullRequestHandler(c *gin.Context) {
 	var createPRDto CreatePullRequestDto
@@ -72,8 +91,8 @@ func (r *Repository) CreatePullRequestHandler(c *gin.Context) {
 		return
 	}
 
-	if err := createPRDto.ValidateCreatePullRequestDto(); err != nil {
-		errResp := errors.New("failed to validate PullRequst: " + err.Error())
+	if err := createPRDto.Validate(); err != nil {
+		errResp := errors.New("failed to validate PullRequest: " + err.Error())
 		c.AbortWithError(http.StatusBadRequest, errResp)
 		return
 	}

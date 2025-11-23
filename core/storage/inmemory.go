@@ -51,6 +51,12 @@ func (mem *InMemoryService) SetUserStatus(userId string, isActive bool) (entitie
 
 	user.SetStatus(isActive)
 	mem.Users[userId] = user
+	for i, m := range mem.Teams[user.TeamName].Members {
+		if m.Id == userId {
+			m.SetStatus(isActive)
+			mem.Teams[user.TeamName].Members[i] = user
+		}
+	}
 
 	return user, nil
 }

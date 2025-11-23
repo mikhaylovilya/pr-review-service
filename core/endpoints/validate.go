@@ -2,10 +2,10 @@ package endpoints
 
 import "errors"
 
-func (u *UserDto) ValidateUserDto() error {
-	return nil
-}
-func (m *TeamMemberDto) ValidateTeamMemberDto() error {
+//	func (u *UserDto) Validate() error {
+//		return nil
+//	}
+func (m *TeamMemberDto) Validate() error {
 	if m.Id == "" {
 		return errors.New("Id is required in TeamMember object")
 	}
@@ -15,7 +15,7 @@ func (m *TeamMemberDto) ValidateTeamMemberDto() error {
 
 	return nil
 }
-func (t *TeamDto) ValidateTeamDto() error {
+func (t *TeamDto) Validate() error {
 	if t.TeamName == "" {
 		return errors.New("TeamName is required in Team object")
 	}
@@ -24,13 +24,22 @@ func (t *TeamDto) ValidateTeamDto() error {
 		return errors.New("[]Members object is nil or it's len is 0")
 	}
 	for _, m := range t.Members {
-		if err := m.ValidateTeamMemberDto(); err != nil {
+		if err := m.Validate(); err != nil {
 			return err
 		}
 	}
 	return nil
 }
-func (pr *CreatePullRequestDto) ValidateCreatePullRequestDto() error {
+
+func (su *SetUserStatusDto) Validate() error {
+	if su.UserId == "" {
+		return errors.New("UserId is required in body")
+	}
+
+	return nil
+}
+
+func (pr *CreatePullRequestDto) Validate() error {
 	if pr.PullRequestId == "" {
 		return errors.New("PullRequestId is required in body")
 	}

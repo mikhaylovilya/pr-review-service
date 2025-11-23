@@ -30,6 +30,11 @@ type UserDto struct {
 // 	MergedAt          time.Time
 // }
 
+type SetUserStatusDto struct {
+	UserId   string `json:"UserId"`
+	IsActive bool   `json:"IsActive"`
+}
+
 type CreatePullRequestDto struct {
 	PullRequestId   string `json:"PullRequestId"`
 	PullRequestName string `json:"PullRequestName"`

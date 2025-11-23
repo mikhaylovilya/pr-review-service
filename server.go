@@ -29,7 +29,7 @@ func (s *Server) StartServer() {
 
 	router.POST("/team/add", s.Repository.AddTeamHandler)
 	router.GET("/team/get/:teamName", s.Repository.GetTeamHandler)
-	// router.POST("/users/setIsActive", s.Repository.AddTeamHandler)
+	router.POST("/users/setIsActive", s.Repository.SetUserStatusHandler)
 	router.POST("/pullRequest/create", s.Repository.CreatePullRequestHandler)
 	router.POST("/pullRequest/merge", s.Repository.MergePullRequestHandler)
 	router.POST("/pullRequest/reassign", s.Repository.ReassignHandler)
