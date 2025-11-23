@@ -34,16 +34,23 @@ func ErrPRExists(entityName string) error {
 func ErrPRMerged(entityName string) error {
 	return NewErrorResponse("PR_MERGED", entityName+" already merged")
 }
+
 func ErrNotAssigned(entityName string) error {
 	return NewErrorResponse("NOT_ASSIGNED", entityName+" wasn't assigned")
 }
+
 func ErrNoCandidate(entityName string) error {
 	return NewErrorResponse("NO_CANDIDATE", "no other candidate, except for "+entityName)
 }
+
 func ErrNotFound(entityName string) error {
 	return NewErrorResponse("NOT_FOUND", entityName+" not found")
 }
 
 func ErrUserExists(entityName string) error {
 	return NewErrorResponse("USER_EXISTS", entityName+" already exists")
+}
+
+func ErrGeneric(msg string) error {
+	return NewErrorResponse("GENERIC", msg)
 }

@@ -1,7 +1,6 @@
 package endpoints
 
 import (
-	"errors"
 	"log/slog"
 	"net/http"
 
@@ -25,20 +24,20 @@ func NewRepository(cache *storage.InMemoryRepository) *Repository {
 func (r *Repository) AddTeamHandler(c *gin.Context) {
 	var teamDto TeamDto
 	if err := c.ShouldBindBodyWithJSON(&teamDto); err != nil {
-		errResp := errors.New("bad request. Use /help to see API specification")
-		c.AbortWithError(http.StatusBadRequest, errResp)
+		errResp := entities.ErrGeneric("failed to unmarshal JSON body")
+		c.JSON(http.StatusBadRequest, errResp)
 		return
 	}
 	if err := teamDto.Validate(); err != nil {
-		errResp := errors.New("failed to validate Team: " + err.Error())
-		c.AbortWithError(http.StatusBadRequest, errResp)
+		errResp := entities.ErrGeneric("failed to validate TeamDto: " + err.Error())
+		c.JSON(http.StatusBadRequest, errResp)
 		return
 	}
 
 	team, err := entities.NewTeam(teamDto.TeamName, usersFromTeamMemberDtos(teamDto.Members, teamDto.TeamName))
 	if err != nil {
-		errResp := errors.New("failed to create entity Team: " + err.Error())
-		c.AbortWithError(http.StatusInternalServerError, errResp)
+		errResp := entities.ErrGeneric("failed to create entity Team: " + err.Error())
+		c.JSON(http.StatusInternalServerError, errResp)
 		return
 	}
 
@@ -47,7 +46,7 @@ func (r *Repository) AddTeamHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, *team)
+	c.JSON(http.StatusCreated, teamToTeamDto(team))
 }
 
 func (r *Repository) GetTeamHandler(c *gin.Context) {
@@ -58,66 +57,74 @@ func (r *Repository) GetTeamHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, &team)
+	c.JSON(http.StatusOK, teamToTeamDto(&team))
 }
 
 func (r *Repository) SetUserStatusHandler(c *gin.Context) {
 	var setUserStatusDto SetUserStatusDto
 	if err := c.ShouldBindBodyWithJSON(&setUserStatusDto); err != nil {
-		errResp := errors.New("failed to unmarshall JSON body: " + err.Error())
-		c.AbortWithError(http.StatusBadRequest, errResp)
+		errResp := entities.ErrGeneric("failed to unmarshal JSON body: " + err.Error())
+		c.JSON(http.StatusBadRequest, errResp)
 		return
 	}
 	if err := setUserStatusDto.Validate(); err != nil {
-		errResp := errors.New("failed to validate SetUserStatusDto: " + err.Error())
-		c.AbortWithError(http.StatusBadRequest, errResp)
+		errResp := entities.ErrGeneric("failed to validate SetUserStatusDto: " + err.Error())
+		c.JSON(http.StatusBadRequest, errResp)
 		return
 	}
 
 	user, err := (*r.InMemory).SetUserStatus(setUserStatusDto.UserId, setUserStatusDto.IsActive)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err)
+		c.JSON(http.StatusNotFound, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, user)
+	c.JSON(http.StatusOK, userToUserDto(&user))
 }
 
 func (r *Repository) CreatePullRequestHandler(c *gin.Context) {
 	var createPRDto CreatePullRequestDto
 	if err := c.ShouldBindBodyWithJSON(&createPRDto); err != nil {
-		errResp := errors.New("failed to unmarshall JSON body: " + err.Error())
-		c.AbortWithError(http.StatusBadRequest, errResp)
+		errResp := entities.ErrGeneric("failed to unmarshal JSON body: " + err.Error())
+		c.JSON(http.StatusBadRequest, errResp)
 		return
 	}
 
 	if err := createPRDto.Validate(); err != nil {
-		errResp := errors.New("failed to validate PullRequest: " + err.Error())
-		c.AbortWithError(http.StatusBadRequest, errResp)
+		errResp := entities.ErrGeneric("failed to validate CreatePullRequestDto: " + err.Error())
+		c.JSON(http.StatusBadRequest, errResp)
 		return
 	}
 
 	pr := *entities.NewPullRequest(createPRDto.PullRequestId, createPRDto.PullRequestName, createPRDto.AuthorId)
 	pr, err := (*r.InMemory).CreatePullRequest(pr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err)
+		httpStatus := http.StatusInternalServerError
+		if errResp, ok := err.(*entities.ErrorResponse); ok {
+			if errResp.ErrorBody.Code == "PR_EXISTS" {
+				httpStatus = http.StatusConflict
+			} else {
+				httpStatus = http.StatusNotFound
+			}
+		}
+		c.JSON(httpStatus, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, pr)
+	c.JSON(http.StatusCreated, pullRequstToPullRequestDto(&pr))
 }
 
 func (r *Repository) MergePullRequestHandler(c *gin.Context) {
 	var mergePRDto MergePullRequestDto
 	if err := c.ShouldBindBodyWithJSON(&mergePRDto); err != nil {
-		errResp := errors.New("failed to unmarshall JSON body: " + err.Error())
-		c.AbortWithError(http.StatusBadRequest, errResp)
+		errResp := entities.ErrGeneric("failed to unmarshal JSON body: " + err.Error())
+		c.JSON(http.StatusBadRequest, errResp)
 		return
 	}
 
 	if err := mergePRDto.Validate(); err != nil {
-		errResp := errors.New("failed to validate MergePullRequestDto: " + err.Error())
-		c.AbortWithError(http.StatusBadRequest, errResp)
+		errResp := entities.ErrGeneric("failed to validate MergePullRequestDto: " + err.Error())
+		c.JSON(http.StatusBadRequest, errResp)
 		return
 	}
 
@@ -127,20 +134,20 @@ func (r *Repository) MergePullRequestHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, pr)
+	c.JSON(http.StatusOK, pullRequstToPullRequestDto(&pr))
 }
 
 func (r *Repository) ReassignHandler(c *gin.Context) {
 	var reassignDto ReassignDto
 	if err := c.ShouldBindBodyWithJSON(&reassignDto); err != nil {
-		errResp := errors.New("failder to unmarshall JSON body" + err.Error())
-		c.AbortWithError(http.StatusBadRequest, errResp)
+		errResp := entities.ErrGeneric("failed to unmarshal JSON body" + err.Error())
+		c.JSON(http.StatusBadRequest, errResp)
 		return
 	}
 
 	if err := reassignDto.Validate(); err != nil {
-		errResp := errors.New("failder to validate ReassignDto" + err.Error())
-		c.AbortWithError(http.StatusBadRequest, errResp)
+		errResp := entities.ErrGeneric("failed to validate ReassignDto" + err.Error())
+		c.JSON(http.StatusBadRequest, errResp)
 		return
 	}
 
@@ -158,7 +165,7 @@ func (r *Repository) ReassignHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, pr)
+	c.JSON(http.StatusOK, pullRequstToPullRequestDto(&pr))
 }
 
 func (r *Repository) GetReviewHandler(c *gin.Context) {
@@ -192,4 +199,47 @@ func usersFromTeamMemberDtos(teamMember []TeamMemberDto, teamName string) []enti
 		users = append(users, *entities.NewUser(m.Id, m.Name, teamName, m.IsActive))
 	}
 	return users
+}
+
+func teamToTeamDto(team *entities.Team) *TeamDto {
+	teamDto := TeamDto{
+		TeamName: team.TeamName,
+		Members:  make([]TeamMemberDto, 0, len(team.Members)),
+	}
+	for _, u := range team.Members {
+		teamDto.Members = append(teamDto.Members,
+			TeamMemberDto{
+				Id:       u.Id,
+				Name:     u.Name,
+				IsActive: u.IsActive,
+			},
+		)
+	}
+
+	return &teamDto
+}
+
+func userToUserDto(user *entities.User) *UserDto {
+	return &UserDto{
+		TeamMemberDto: TeamMemberDto{
+			Id:       user.Id,
+			Name:     user.Name,
+			IsActive: user.IsActive,
+		},
+		TeamName: user.TeamName,
+	}
+}
+
+func pullRequstToPullRequestDto(pr *entities.PullRequest) *PullRequestDto {
+	return &PullRequestDto{
+		PullRequestShortDto: PullRequestShortDto{
+			PullRequestId:   pr.PullRequestId,
+			PullRequestName: pr.PullRequestName,
+			AuthorId:        pr.AuthorId,
+			Status:          pr.Status,
+		},
+		AssignedReviewers: pr.AssignedReviewers,
+		CreatedAt:         pr.CreatedAt,
+		MergedAt:          pr.MergedAt,
+	}
 }

@@ -33,8 +33,6 @@ func (mem *InMemoryService) GetTeam(teamName string) (entities.Team, error) {
 	defer mem.mtx.Unlock()
 
 	if _, ok := mem.Teams[teamName]; !ok {
-		// return entities.Team{}, &endpoints.ErrNotFound
-		// return entities.Team{}, errors.New(teamName + "does not exists")
 		return entities.Team{}, entities.ErrNotFound(teamName)
 	}
 
@@ -48,7 +46,6 @@ func (mem *InMemoryService) SetUserStatus(userId string, isActive bool) (entitie
 
 	user, ok := mem.Users[userId]
 	if !ok {
-		// return entities.User{}, errors.New(userId + "does not exists")
 		return entities.User{}, entities.ErrNotFound(userId)
 	}
 
