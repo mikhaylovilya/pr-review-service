@@ -15,13 +15,11 @@ import (
 )
 
 type Server struct {
-	// HTTPServer *http.Server
 	Repository *endpoints.Repository
 }
 
-func NewServer(repo *endpoints.Repository /*httpServer *http.Server*/) Server {
+func NewServer(repo *endpoints.Repository) Server {
 	return Server{
-		// HTTPServer: httpServer,
 		Repository: repo,
 	}
 }
@@ -31,6 +29,8 @@ func (s *Server) StartServer() {
 
 	router.POST("/team/add", s.Repository.AddTeamHandler)
 	router.GET("/team/get/:teamName", s.Repository.GetTeamHandler)
+	// router.POST("/users/setIsActive", s.Repository.AddTeamHandler)
+	router.POST("/pullRequest/create", s.Repository.CreatePullRequestHandler)
 
 	httpServer := &http.Server{
 		Addr:    ":3081",

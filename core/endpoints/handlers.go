@@ -7,18 +7,18 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/mikhaylovilya/pr-review-service/core/entities"
-	"github.com/mikhaylovilya/pr-review-service/core/repository"
+	"github.com/mikhaylovilya/pr-review-service/core/storage"
 )
 
 type Repository struct {
-	Cache  *repository.InMemoryRepository
-	logger *slog.Logger
+	InMemory *storage.InMemoryRepository
+	logger   *slog.Logger
 }
 
-func NewRepository(cache *repository.InMemoryRepository) *Repository {
+func NewRepository(cache *storage.InMemoryRepository) *Repository {
 	return &Repository{
-		Cache:  cache,
-		logger: slog.Default(),
+		InMemory: cache,
+		logger:   slog.Default(),
 	}
 }
 
@@ -42,7 +42,7 @@ func (r *Repository) AddTeamHandler(c *gin.Context) {
 		return
 	}
 
-	if err := (*r.Cache).AddTeam(*team); err != nil {
+	if err := (*r.InMemory).AddTeam(*team); err != nil {
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
@@ -52,13 +52,40 @@ func (r *Repository) AddTeamHandler(c *gin.Context) {
 
 func (r *Repository) GetTeamHandler(c *gin.Context) {
 	teamName := c.Param("teamName")
-	team, err := (*r.Cache).GetTeam(teamName)
+	team, err := (*r.InMemory).GetTeam(teamName)
 	if err != nil {
 		c.JSON(http.StatusNotFound, err)
 		return
 	}
 
 	c.JSON(http.StatusOK, &team)
+}
+
+// func (r *Repository) SetUserStatusHandler(c *gin.Context) {
+// }
+
+func (r *Repository) CreatePullRequestHandler(c *gin.Context) {
+	var createPRDto CreatePullRequestDto
+	if err := c.ShouldBindBodyWithJSON(&createPRDto); err != nil {
+		errResp := errors.New("failed to unmarshall JSON body: " + err.Error())
+		c.AbortWithError(http.StatusBadRequest, errResp)
+		return
+	}
+
+	if err := createPRDto.ValidateCreatePullRequestDto(); err != nil {
+		errResp := errors.New("failed to validate PullRequst: " + err.Error())
+		c.AbortWithError(http.StatusBadRequest, errResp)
+		return
+	}
+
+	pr := *entities.NewPullRequest(createPRDto.PullRequestId, createPRDto.PullRequestName, createPRDto.AuthorId)
+	pr, err := (*r.InMemory).CreatePullRequest(pr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, pr)
 }
 
 func usersFromTeamMemberDtos(teamMember []TeamMemberDto, teamName string) []entities.User {

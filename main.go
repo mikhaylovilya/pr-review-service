@@ -2,11 +2,11 @@ package main
 
 import (
 	"github.com/mikhaylovilya/pr-review-service/core/endpoints"
-	"github.com/mikhaylovilya/pr-review-service/core/repository"
+	"github.com/mikhaylovilya/pr-review-service/core/storage"
 )
 
 func main() {
-	var cache repository.InMemoryRepository = repository.NewInMemory()
+	var cache storage.InMemoryRepository = storage.NewInMemory()
 	repo := endpoints.NewRepository(&cache)
 	server := NewServer(repo)
 	server.StartServer()

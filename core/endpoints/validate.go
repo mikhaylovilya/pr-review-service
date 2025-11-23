@@ -30,6 +30,17 @@ func (t *TeamDto) ValidateTeamDto() error {
 	}
 	return nil
 }
-func (u *PullRequestShortDto) ValidatePullRequestDto() error {
+func (pr *CreatePullRequestDto) ValidateCreatePullRequestDto() error {
+	if pr.PullRequestName == "" {
+		return errors.New("PullRequestId is required in body")
+	}
+
+	if pr.PullRequestName == "" {
+		return errors.New("PullRequestName is required in body")
+	}
+
+	if pr.AuthorId == "" {
+		return errors.New("AuthorId is required in body")
+	}
 	return nil
 }

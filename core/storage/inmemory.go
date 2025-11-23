@@ -1,4 +1,4 @@
-package repository
+package storage
 
 import (
 	"github.com/mikhaylovilya/pr-review-service/core/entities"
@@ -9,18 +9,14 @@ func (mem *InMemoryService) AddTeam(team entities.Team) error {
 	defer mem.mtx.Unlock()
 
 	if _, ok := mem.Teams[team.TeamName]; ok {
-		// return &endpoints.ErrTeamExists
-		// return errors.New(team.TeamName + "already exists")
 		return entities.ErrTeamExists(team.TeamName)
 	}
 
 	for _, u := range team.Members {
 		if _, ok := mem.Users[u.Id]; ok {
-			// return errors.New(u.Id + "already exists")
 			return entities.ErrUserExists(u.Id)
 		}
 	}
-	// mem.AddUsers(mem.Teams[team.TeamName].Members)
 
 	for _, u := range team.Members {
 		mem.Users[u.Id] = u
@@ -28,22 +24,6 @@ func (mem *InMemoryService) AddTeam(team entities.Team) error {
 	mem.Teams[team.TeamName] = team
 	return nil
 }
-
-// func (mem *InMemory) AddUsers(users []entities.User) error {
-// 	mem.mtx.Lock()
-// 	defer mem.mtx.Unlock()
-
-// 	for _, u := range users {
-// 		if _, ok := mem.Users[u.Id]; ok {
-// 			// return &endpoints.ErrUserExists
-// 			return errors.New(u.Id + "already exists")
-// 		}
-
-// 		mem.Users[u.Id] = u
-// 	}
-
-// 	return nil
-// }
 
 func (mem *InMemoryService) GetTeam(teamName string) (entities.Team, error) {
 	mem.mtx.Lock()
@@ -59,7 +39,7 @@ func (mem *InMemoryService) GetTeam(teamName string) (entities.Team, error) {
 	return team, nil
 }
 
-func (mem *InMemoryService) SetUserIsActive(userId string, isActive bool) (entities.User, error) {
+func (mem *InMemoryService) SetUserStatus(userId string, isActive bool) (entities.User, error) {
 	mem.mtx.Lock()
 	defer mem.mtx.Unlock()
 
@@ -75,4 +55,23 @@ func (mem *InMemoryService) SetUserIsActive(userId string, isActive bool) (entit
 	return user, nil
 }
 
-// func (mem *InMemory) CreatePullRequest(pr entit)
+func (mem *InMemoryService) CreatePullRequest(pr entities.PullRequest) (entities.PullRequest, error) {
+	mem.mtx.Lock()
+	defer mem.mtx.Unlock()
+
+	if _, ok := mem.PullRequests[pr.PullRequestId]; ok {
+		return entities.PullRequest{}, entities.ErrPRExists(pr.PullRequestId)
+	}
+
+	if _, ok := mem.Users[pr.AuthorId]; !ok {
+		return entities.PullRequest{}, entities.ErrNotFound(pr.AuthorId)
+	}
+
+	teamName := mem.Users[pr.AuthorId].TeamName
+	if err := pr.AssignReviewers(mem.Teams[teamName].Members); err != nil {
+		return entities.PullRequest{}, err
+	}
+
+	mem.PullRequests[pr.PullRequestId] = pr
+	return pr, nil
+}

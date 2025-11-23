@@ -1,9 +1,5 @@
 package endpoints
 
-import (
-	"time"
-)
-
 type TeamDto struct {
 	TeamName string
 	Members  []TeamMemberDto
@@ -20,25 +16,22 @@ type UserDto struct {
 	TeamName string `json:"TeamName"`
 }
 
-type PullRequestShortDto struct {
-	PullRequestId   string
-	PullRequestName string
-	AuthorId        string
-	Status          string
-}
+// type PullRequestShortDto struct {
+// 	PullRequestId   string
+// 	PullRequestName string
+// 	AuthorId        string
+// 	// Status          string
+// }
 
-type PullRequestDto struct {
-	PullRequestShortDto
-	AssignedReviewers []string
-	CreatedAt         time.Time
-	MergedAt          time.Time
-}
+// type PullRequestDto struct {
+// 	PullRequestShortDto
+// 	AssignedReviewers []string
+// 	CreatedAt         time.Time
+// 	MergedAt          time.Time
+// }
 
-// const (
-// 	ErrCodeTeamExists = iota
-// 	ErrCodePRExists
-// 	ErrCodePRMerged
-// 	ErrCodeNotAssigned
-// 	ErrCodeNoCandidate
-// 	ErrCodeNotFound
-// )
+type CreatePullRequestDto struct {
+	PullRequestId   string `json:"PullRequestId"`
+	PullRequestName string `json:"PullRequestName"`
+	AuthorId        string `json:"AuthorId"`
+}

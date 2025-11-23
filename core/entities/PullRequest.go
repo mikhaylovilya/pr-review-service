@@ -12,12 +12,45 @@ type PullRequest struct {
 	MergedAt          time.Time
 }
 
-func NewPullRequest(prId string, prName string, authorId string, status string) *PullRequest {
+func NewPullRequest(prId string, prName string, authorId string) *PullRequest {
 	return &PullRequest{
 		PullRequestId:   prId,
 		PullRequestName: prName,
 		AuthorId:        authorId,
-		Status:          status,
+		Status:          "OPEN",
 		CreatedAt:       time.Now(),
 	}
+}
+
+func (pr *PullRequest) Merge() {
+	// if pr.Status == "MERGED" {
+	// 	return ErrPRMerged(pr.PullRequestId)
+	// }
+	pr.Status = "MERGED"
+	pr.MergedAt = time.Now()
+	// return nil
+}
+
+func (pr *PullRequest) AssignReviewers(users []User) error {
+	assignedReviewers := make([]string, 0, 2)
+	for _, u := range users {
+		if u.IsActive && u.Id != pr.AuthorId {
+			assignedReviewers = append(assignedReviewers, u.Id)
+
+			if len(assignedReviewers) == 2 {
+				break
+			}
+		}
+	}
+
+	if len(assignedReviewers) == 0 {
+		return ErrNoCandidate(pr.PullRequestId)
+	}
+
+	pr.AssignedReviewers = assignedReviewers
+	return nil
+}
+
+func (pr *PullRequest) ReassignReviewer(user *User) error {
+	return nil
 }
