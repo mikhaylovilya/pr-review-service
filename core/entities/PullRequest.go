@@ -43,14 +43,10 @@ func (pr *PullRequest) AssignReviewers(users []User) error {
 		}
 	}
 
-	if len(assignedReviewers) == 0 {
-		return ErrNoCandidate(pr.PullRequestId)
-	}
-
 	pr.AssignedReviewers = assignedReviewers
 	return nil
 }
 
-func (pr *PullRequest) ReassignReviewer(user *User) error {
-	return nil
-}
+// func (pr *PullRequest) ReassignReviewer(reassignee *User, users []User) error {
+
+// }
