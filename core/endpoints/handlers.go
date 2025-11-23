@@ -146,11 +146,44 @@ func (r *Repository) ReassignHandler(c *gin.Context) {
 
 	pr, err := (*r.InMemory).ReassignReviewer(reassignDto.PullRequestId, reassignDto.OldUserId)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err)
+		var httpStatus int = http.StatusInternalServerError
+		if errResp, ok := err.(*entities.ErrorResponse); ok {
+			if errResp.ErrorBody.Code == "NOT_FOUND" {
+				httpStatus = http.StatusNotFound
+			} else {
+				httpStatus = http.StatusConflict
+			}
+		}
+		c.JSON(httpStatus, err)
 		return
 	}
 
 	c.JSON(http.StatusOK, pr)
+}
+
+func (r *Repository) GetReviewHandler(c *gin.Context) {
+	userId := c.Param("userId")
+	prs, err := (*r.InMemory).GetReview(userId)
+	if err != nil {
+		c.JSON(http.StatusNotFound, err)
+		return
+	}
+
+	sprs := shortPullRequestsFromPullRequests(prs)
+	c.JSON(http.StatusOK, sprs)
+}
+
+func shortPullRequestsFromPullRequests(prs []entities.PullRequest) []PullRequestShortDto {
+	sprs := make([]PullRequestShortDto, 0, len(prs))
+	for _, pr := range prs {
+		sprs = append(sprs, PullRequestShortDto{
+			PullRequestId:   pr.PullRequestId,
+			PullRequestName: pr.PullRequestName,
+			AuthorId:        pr.AuthorId,
+			Status:          pr.Status,
+		})
+	}
+	return sprs
 }
 
 func usersFromTeamMemberDtos(teamMember []TeamMemberDto, teamName string) []entities.User {

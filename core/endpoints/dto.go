@@ -16,12 +16,12 @@ type UserDto struct {
 	TeamName string `json:"TeamName"`
 }
 
-// type PullRequestShortDto struct {
-// 	PullRequestId   string
-// 	PullRequestName string
-// 	AuthorId        string
-// 	// Status          string
-// }
+type PullRequestShortDto struct {
+	PullRequestId   string
+	PullRequestName string
+	AuthorId        string
+	Status          string
+}
 
 // type PullRequestDto struct {
 // 	PullRequestShortDto

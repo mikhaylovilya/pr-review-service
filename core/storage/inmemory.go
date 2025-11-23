@@ -1,6 +1,9 @@
 package storage
 
 import (
+	"maps"
+	"slices"
+
 	"github.com/mikhaylovilya/pr-review-service/core/entities"
 )
 
@@ -117,6 +120,22 @@ func (mem *InMemoryService) ReassignReviewer(prId string, reviewerId string) (en
 	return pr, nil
 }
 
-func (mem *InMemoryService) GetReview(userId string, prId string) ([]entities.PullRequest, error) {
-	return []entities.PullRequest{}, nil
+func (mem *InMemoryService) GetReview(userId string) ([]entities.PullRequest, error) {
+	mem.mtx.Lock()
+	defer mem.mtx.Unlock()
+
+	if _, ok := mem.Users[userId]; !ok {
+		return []entities.PullRequest{}, entities.ErrNotFound(userId)
+	}
+
+	prs := make([]entities.PullRequest, 0, len(mem.PullRequests))
+	for _, pr := range slices.Collect(maps.Values(mem.PullRequests)) {
+		for _, rev := range pr.AssignedReviewers {
+			if userId == rev {
+				prs = append(prs, pr)
+			}
+		}
+	}
+
+	return prs, nil
 }

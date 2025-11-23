@@ -13,7 +13,7 @@ type InMemoryRepository interface {
 	CreatePullRequest(pr entities.PullRequest) (entities.PullRequest, error)
 	MergePullRequest(prId string) (entities.PullRequest, error)
 	ReassignReviewer(prId string, reviewerId string) (entities.PullRequest, error)
-	GetReview(userId string, prId string) ([]entities.PullRequest, error)
+	GetReview(userId string) ([]entities.PullRequest, error)
 }
 
 type InMemoryService struct {

@@ -33,6 +33,7 @@ func (s *Server) StartServer() {
 	router.POST("/pullRequest/create", s.Repository.CreatePullRequestHandler)
 	router.POST("/pullRequest/merge", s.Repository.MergePullRequestHandler)
 	router.POST("/pullRequest/reassign", s.Repository.ReassignHandler)
+	router.GET("/users/getReview/:userId", s.Repository.GetReviewHandler)
 
 	httpServer := &http.Server{
 		Addr:    ":3081",
