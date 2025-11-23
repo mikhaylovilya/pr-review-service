@@ -1,12 +1,12 @@
 package entities
 
 type ErrorResponse struct {
-	ErrorBody ErrorBody
+	ErrorBody ErrorBody `json:"error_body"`
 }
 
 type ErrorBody struct {
-	Code    string
-	Message string
+	Code    string `json:"code"`
+	Message string `json:"message"`
 }
 
 func NewErrorResponse(code string, msg string) *ErrorResponse {

@@ -52,10 +52,11 @@ func (pr *PullRequest) ReassignReviewer(reviewerId string, users []User) error {
 		return ErrPRMerged(pr.PullRequestId)
 	}
 
-	reviewerAssigned := false
-	for _, rId := range pr.AssignedReviewers {
+	reviewerAssigned, reviewerIndex := false, 0
+	for i, rId := range pr.AssignedReviewers {
 		if rId == reviewerId {
 			reviewerAssigned = true
+			reviewerIndex = i
 		}
 	}
 
@@ -65,7 +66,14 @@ func (pr *PullRequest) ReassignReviewer(reviewerId string, users []User) error {
 
 	var newReviewer *User
 	for _, u := range users {
-		if u.IsActive && u.Id != pr.AuthorId && u.Id != reviewerId {
+		isUserAReviewer := false
+		for _, reviewer := range pr.AssignedReviewers {
+			if u.Id == reviewer {
+				isUserAReviewer = true
+			}
+		}
+
+		if u.IsActive && u.Id != pr.AuthorId && !isUserAReviewer {
 			newReviewer = &u
 			break
 		}
@@ -77,6 +85,7 @@ func (pr *PullRequest) ReassignReviewer(reviewerId string, users []User) error {
 
 	//TODO
 	// pr.AuthorId = newReviewer.Id
+	pr.AssignedReviewers[reviewerIndex] = newReviewer.Id
 
 	return nil
 }
