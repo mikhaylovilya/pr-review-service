@@ -45,6 +45,14 @@ func (pr *CreatePullRequestDto) ValidateCreatePullRequestDto() error {
 	return nil
 }
 
+func (mr *MergePullRequestDto) Validate() error {
+	if mr.PullRequestId == "" {
+		return errors.New("PullRequestId is required in body")
+	}
+
+	return nil
+}
+
 func (re *ReassignDto) Validate() error {
 	if re.PullRequestId == "" {
 		return errors.New("PullRequestId is required in body")

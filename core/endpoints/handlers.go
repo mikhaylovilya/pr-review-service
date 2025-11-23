@@ -88,6 +88,29 @@ func (r *Repository) CreatePullRequestHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, pr)
 }
 
+func (r *Repository) MergePullRequestHandler(c *gin.Context) {
+	var mergePRDto MergePullRequestDto
+	if err := c.ShouldBindBodyWithJSON(&mergePRDto); err != nil {
+		errResp := errors.New("failed to unmarshall JSON body: " + err.Error())
+		c.AbortWithError(http.StatusBadRequest, errResp)
+		return
+	}
+
+	if err := mergePRDto.Validate(); err != nil {
+		errResp := errors.New("failed to validate MergePullRequestDto: " + err.Error())
+		c.AbortWithError(http.StatusBadRequest, errResp)
+		return
+	}
+
+	pr, err := (*r.InMemory).MergePullRequest(mergePRDto.PullRequestId)
+	if err != nil {
+		c.JSON(http.StatusNotFound, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, pr)
+}
+
 func (r *Repository) ReassignHandler(c *gin.Context) {
 	var reassignDto ReassignDto
 	if err := c.ShouldBindBodyWithJSON(&reassignDto); err != nil {

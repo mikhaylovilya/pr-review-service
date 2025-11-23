@@ -36,6 +36,10 @@ type CreatePullRequestDto struct {
 	AuthorId        string `json:"AuthorId"`
 }
 
+type MergePullRequestDto struct {
+	PullRequestId string `json:"PullRequestId"`
+}
+
 type ReassignDto struct {
 	PullRequestId string `json:"PullRequestId"`
 	OldUserId     string `json:"OldUserId"`

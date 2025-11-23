@@ -25,8 +25,10 @@ func NewPullRequest(prId string, prName string, authorId string) *PullRequest {
 }
 
 func (pr *PullRequest) Merge() {
+	if pr.Status == "OPEN" {
+		pr.MergedAt = time.Now()
+	}
 	pr.Status = "MERGED"
-	pr.MergedAt = time.Now()
 }
 
 func (pr *PullRequest) AssignReviewers(users []User) error {

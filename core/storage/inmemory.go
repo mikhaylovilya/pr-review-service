@@ -76,6 +76,20 @@ func (mem *InMemoryService) CreatePullRequest(pr entities.PullRequest) (entities
 	return pr, nil
 }
 
+func (mem *InMemoryService) MergePullRequest(prId string) (entities.PullRequest, error) {
+	mem.mtx.Lock()
+	defer mem.mtx.Unlock()
+
+	pr, ok := mem.PullRequests[prId]
+	if !ok {
+		return entities.PullRequest{}, entities.ErrNotFound(pr.PullRequestId)
+	}
+
+	pr.Merge()
+	mem.PullRequests[pr.PullRequestId] = pr
+	return pr, nil
+}
+
 func (mem *InMemoryService) ReassignReviewer(prId string, reviewerId string) (entities.PullRequest, error) {
 	mem.mtx.Lock()
 	defer mem.mtx.Unlock()
@@ -95,4 +109,8 @@ func (mem *InMemoryService) ReassignReviewer(prId string, reviewerId string) (en
 
 	mem.PullRequests[prId] = pr
 	return pr, nil
+}
+
+func (mem *InMemoryService) GetReview(userId string, prId string) ([]entities.PullRequest, error) {
+	return []entities.PullRequest{}, nil
 }
