@@ -1,6 +1,8 @@
 package entities
 
-import "time"
+import (
+	"time"
+)
 
 type PullRequest struct {
 	PullRequestId     string
@@ -23,12 +25,8 @@ func NewPullRequest(prId string, prName string, authorId string) *PullRequest {
 }
 
 func (pr *PullRequest) Merge() {
-	// if pr.Status == "MERGED" {
-	// 	return ErrPRMerged(pr.PullRequestId)
-	// }
 	pr.Status = "MERGED"
 	pr.MergedAt = time.Now()
-	// return nil
 }
 
 func (pr *PullRequest) AssignReviewers(users []User) error {
@@ -47,6 +45,36 @@ func (pr *PullRequest) AssignReviewers(users []User) error {
 	return nil
 }
 
-// func (pr *PullRequest) ReassignReviewer(reassignee *User, users []User) error {
+func (pr *PullRequest) ReassignReviewer(reviewerId string, users []User) error {
+	if pr.Status == "MERGED" {
+		return ErrPRMerged(pr.PullRequestId)
+	}
 
-// }
+	reviewerAssigned := false
+	for _, rId := range pr.AssignedReviewers {
+		if rId == reviewerId {
+			reviewerAssigned = true
+		}
+	}
+
+	if !reviewerAssigned {
+		return ErrNotAssigned(reviewerId)
+	}
+
+	var newReviewer *User
+	for _, u := range users {
+		if u.IsActive && u.Id != pr.AuthorId && u.Id != reviewerId {
+			newReviewer = &u
+			break
+		}
+	}
+
+	if newReviewer == nil {
+		return ErrNoCandidate(reviewerId)
+	}
+
+	//TODO
+	// pr.AuthorId = newReviewer.Id
+
+	return nil
+}

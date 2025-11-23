@@ -75,3 +75,24 @@ func (mem *InMemoryService) CreatePullRequest(pr entities.PullRequest) (entities
 	mem.PullRequests[pr.PullRequestId] = pr
 	return pr, nil
 }
+
+func (mem *InMemoryService) ReassignReviewer(prId string, reviewerId string) (entities.PullRequest, error) {
+	mem.mtx.Lock()
+	defer mem.mtx.Unlock()
+
+	if _, ok := mem.PullRequests[prId]; !ok {
+		return entities.PullRequest{}, entities.ErrNotFound(prId)
+	}
+
+	if _, ok := mem.Users[reviewerId]; !ok {
+		return entities.PullRequest{}, entities.ErrNotFound(reviewerId)
+	}
+
+	pr := mem.PullRequests[prId]
+	if err := pr.ReassignReviewer(reviewerId, mem.Teams[mem.Users[reviewerId].TeamName].Members); err != nil {
+		return entities.PullRequest{}, err
+	}
+
+	mem.PullRequests[prId] = pr
+	return pr, nil
+}

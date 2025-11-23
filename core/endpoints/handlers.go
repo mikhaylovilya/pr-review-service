@@ -88,6 +88,29 @@ func (r *Repository) CreatePullRequestHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, pr)
 }
 
+func (r *Repository) ReassignHandler(c *gin.Context) {
+	var reassignDto ReassignDto
+	if err := c.ShouldBindBodyWithJSON(&reassignDto); err != nil {
+		errResp := errors.New("failder to unmarshall JSON body" + err.Error())
+		c.AbortWithError(http.StatusBadRequest, errResp)
+		return
+	}
+
+	if err := reassignDto.Validate(); err != nil {
+		errResp := errors.New("failder to validate ReassignDto" + err.Error())
+		c.AbortWithError(http.StatusBadRequest, errResp)
+		return
+	}
+
+	pr, err := (*r.InMemory).ReassignReviewer(reassignDto.PullRequestId, reassignDto.OldUserId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, pr)
+}
+
 func usersFromTeamMemberDtos(teamMember []TeamMemberDto, teamName string) []entities.User {
 	users := make([]entities.User, 0, len(teamMember))
 	for _, m := range teamMember {

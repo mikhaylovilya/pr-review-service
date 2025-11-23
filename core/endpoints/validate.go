@@ -31,7 +31,7 @@ func (t *TeamDto) ValidateTeamDto() error {
 	return nil
 }
 func (pr *CreatePullRequestDto) ValidateCreatePullRequestDto() error {
-	if pr.PullRequestName == "" {
+	if pr.PullRequestId == "" {
 		return errors.New("PullRequestId is required in body")
 	}
 
@@ -42,5 +42,17 @@ func (pr *CreatePullRequestDto) ValidateCreatePullRequestDto() error {
 	if pr.AuthorId == "" {
 		return errors.New("AuthorId is required in body")
 	}
+	return nil
+}
+
+func (re *ReassignDto) Validate() error {
+	if re.PullRequestId == "" {
+		return errors.New("PullRequestId is required in body")
+	}
+
+	if re.OldUserId == "" {
+		return errors.New("OldUserId is required in body")
+	}
+
 	return nil
 }

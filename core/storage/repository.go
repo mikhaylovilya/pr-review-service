@@ -11,6 +11,7 @@ type InMemoryRepository interface {
 	GetTeam(teamName string) (entities.Team, error)
 	SetUserStatus(userId string, isActive bool) (entities.User, error)
 	CreatePullRequest(pr entities.PullRequest) (entities.PullRequest, error)
+	ReassignReviewer(prId string, reviewerId string) (entities.PullRequest, error)
 }
 
 type InMemoryService struct {

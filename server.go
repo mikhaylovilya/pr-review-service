@@ -31,6 +31,7 @@ func (s *Server) StartServer() {
 	router.GET("/team/get/:teamName", s.Repository.GetTeamHandler)
 	// router.POST("/users/setIsActive", s.Repository.AddTeamHandler)
 	router.POST("/pullRequest/create", s.Repository.CreatePullRequestHandler)
+	router.POST("/pullRequest/reassign", s.Repository.ReassignHandler)
 
 	httpServer := &http.Server{
 		Addr:    ":3081",
