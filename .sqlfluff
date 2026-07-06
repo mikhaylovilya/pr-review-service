@@ -1,0 +1,6 @@
+[sqlfluff]
+dialect = postgres
+[sqlfluff:rules:capitalisation.identifiers]
+extended_capitalisation_policy = snake
+[sqlfluff:rules:references.keywords]
+ignore_words = status, name

@@ -7,10 +7,12 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/mikhaylovilya/pr-review-service/core/config"
 	"github.com/mikhaylovilya/pr-review-service/core/endpoints"
 )
 
@@ -35,8 +37,13 @@ func (s *Server) StartServer() {
 	router.POST("/pullRequest/reassign", s.Repository.ReassignHandler)
 	router.GET("/users/getReview/:userId", s.Repository.GetReviewHandler)
 
+	// serverPort := os.Getenv("HTTP_SERVER_PORT")
+
+	cfg := config.NewConfig()
+	log.Printf("%v", cfg)
+
 	httpServer := &http.Server{
-		Addr:    ":3081",
+		Addr:    ":" + strconv.Itoa(cfg.HTTPServerPort),
 		Handler: router,
 	}
 
